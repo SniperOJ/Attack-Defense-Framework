@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# 通过任意代码执行达到权限维持的效果
 
 import requests
 import random
