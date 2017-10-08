@@ -88,17 +88,39 @@ def handle_cookie(url, root, flag_path):
                 all_requests.append(request)
     return all_requests
 
+def get_targets():
+    targets = []
+    with open("targets") as f:
+        for line in f:
+            host = line.split(":")[0]
+            port = int(line.split(":")[1])
+            targets.append((host, port))
+    return targets
+
 def main():
-    url = "http://127.0.0.1/"
     flag_path = "/home/web/flag/flag"
     root = "./sources"
+    round_time = 60 * 5
     all_requests = []
-    all_requests += handle_get(url, root, flag_path)
-    all_requests += handle_post(url, root, flag_path)
-    all_requests += handle_cookie(url, root, flag_path)
+    targets = get_targets()
+    for target in targets:
+        print "-" * 32
+        host = target[0]
+        port = target[1]
+        print "[+] Generating requests to fake %s:%d" % (host, port)
+        url = "http://%s:%d/" % (host, port)
+        print "[+] Requests number : [%d]" % (len(all_requests))
+        all_requests += handle_get(url, root, flag_path)
+        print "[+] Requests number : [%d]" % (len(all_requests))
+        all_requests += handle_post(url, root, flag_path)
+        print "[+] Requests number : [%d]" % (len(all_requests))
+        all_requests += handle_cookie(url, root, flag_path)
+
+    each_second = len(all_requests) / round_time
+    print "[+] Each second should send %d requests" % (each_second)
     random.shuffle(all_requests)
     for request in all_requests:
-        sleep_time = random.random()
+        sleep_time = 1.0 / each_second
         print "[+] Sleeping %f seconds" % (sleep_time)
         time.sleep(sleep_time)
         print "[+] Sending http requests ..."
