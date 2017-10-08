@@ -9,12 +9,15 @@ import random
 from core.obfs.fake_payloads import *
 from core.obfs.get_arg import *
 
-timeout = 1
+timeout = 0.1
 
 def send_http(request):
     prepared = request.prepare()
     session = requests.Session()
-    session.send(prepared, timeout=timeout)
+    try:
+        session.send(prepared, timeout=timeout)
+    except Exception as e:
+        print e
 
 def handle_single_http(request):
     send_http(request)
@@ -100,7 +103,7 @@ def get_targets():
 def main():
     flag_path = "/home/web/flag/flag"
     root = "./sources"
-    round_time = 60 * 5
+    round_time = 60
     all_requests = []
     targets = get_targets()
     for target in targets:
@@ -125,7 +128,10 @@ def main():
         time.sleep(sleep_time)
         print "[+] Sending http requests ..."
         print "%s => %s" % (request.method, request.url)
-        handle_single_http(request)
+        thread = threading.Thread(target=handle_single_http, args=(request,))
+        thread.start()
+        thread.join()
+
 
 if __name__ == "__main__":
     main()
