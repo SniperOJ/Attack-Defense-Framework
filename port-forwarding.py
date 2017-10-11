@@ -12,7 +12,7 @@ import string
 import hashlib
 import time
 
-connections = {}
+data_recoder = {}
 
 
 def md5(data):
@@ -86,9 +86,8 @@ def get_time_human():
     return time.strftime("%I:%M:%S")
 
 def transfer(src, dst, attacker, attacker_host, attacker_port):
+    global data_recoder
     attacker_hash = hash_host_port(attacker_host, attacker_port)
-    global connections
-    data = []
     src_name = src.getsockname()
     src_host = src_name[0]
     src_port = src_name[1]
@@ -100,14 +99,8 @@ def transfer(src, dst, attacker, attacker_host, attacker_port):
         if len(buffer) == 0:
             print "[-] No data received! Breaking..."
             break
-        data.append(buffer)
+        data_recoder[attacker_hash].append(buffer)
         if attacker:
-            # print "[%s] => [%d] ===> %s" % (src_host, src_port, attacker_hash)
-            if connections[attacker_hash]:
-                print "[%s]" % ("!" * 32)
-                print "[!] Found useful payload!"
-                print_payloads(data)
-                save_payloads(data, attacker_host, attacker_port)
             dst.send(buffer)
         else:
             print "[+] %s:%d => %s:%d => Length : [%d]" % (src_host, src_port, dst_host, dst_port, len(buffer))
@@ -115,10 +108,11 @@ def transfer(src, dst, attacker, attacker_host, attacker_port):
             if result[0]:
                 print "[%s]" % ("!" * 32)
                 print "[!] Flag thief detected!"
-                print_payloads(data)
-                save_payloads(data, attacker_host, attacker_port)
+                print_payloads(data_recoder[attacker_hash])
+                save_payloads(data_recoder[attacker_hash], attacker_host, attacker_port)
+                # Clear saved payloads
+                data_recoder[attacker_hash] = []
                 # print "[%s] => [%d] ===> %s" % (dst_host, dst_port, attacker_hash)
-                connections[attacker_hash] = True
             dst.send(result[1])
     print "[+] Closing connecions! [%s:%d]" % (src_host, src_port)
     src.close()
@@ -127,7 +121,7 @@ def transfer(src, dst, attacker, attacker_host, attacker_port):
 
 
 def server(listen_host, listen_port, remote_host, remote_port, max_connection):
-    global connections
+    global data_recoder
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((listen_host, listen_port))
@@ -143,7 +137,7 @@ def server(listen_host, listen_port, remote_host, remote_port, max_connection):
         attacker_hash = hash_host_port(attacker_host, attacker_port)
         # print "[%s] => [%d] ===> %s" % (attacker_host, attacker_port, attacker_hash)
         print "[+] Using hash : %s" % (attacker_hash)
-        connections[attacker_hash] = False
+        data_recoder[attacker_hash] = []
         print "[+] Trying to connect the REMOTE server [%s:%d]" % (remote_host, remote_port)
         remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         remote_socket.connect((remote_host, remote_port))
