@@ -92,12 +92,12 @@ def random_string(length):
         result += random.choice(random_range)
     return result
 
-def auto_change_password(targets):
+def auto_change_password_with_password(target):
     print "-" * 32
-    host = targets[0]
-    port = int(targets[1])
-    username = targets[2]
-    password = targets[3]
+    host = target[0]
+    port = int(target[1])
+    username = target[2]
+    password = target[3]
     salt = random_string(32)
     new_password = md5("%s:%d:%s:%s:%s" % (host, port, username, password, salt))
 
@@ -123,11 +123,48 @@ def auto_change_password(targets):
         print "[-] Login error!"
         print "[-] %s" % (result[1])
 
+def auto_change_password_with_key(target):
+    print "-" * 32
+    host = target[0]
+    port = int(target[1])
+    username = target[2]
+    key_path = target[3]
+    salt = random_string(32)
+    new_password = md5("%s:%d:%s:%s" % (host, port, username, salt))
+
+    print "Host : %s" % (host)
+    print "Port : %s" % (port)
+    print "User : %s" % (username)
+    print "File : %s" % (key_path)
+    print "NewP : %s" % (new_password)
+    print "Trying to login..."
+    result = login_with_key(host, port, username, key_path)
+    if result[0]:
+        ssh = result[1]
+        print "[+] Login success!"
+        #print "[+] Trying to change password [%s] => [%s]" % (password, new_password)
+        #change_password(ssh, password, new_password)
+        #with open("ssh.log", "a+") as f:
+        #    content = "%s:%s@%s:%d => %s\n" % (username, password, host, port, new_password)
+        #    f.write(content)
+        #print "[+] Closing conneciton..."
+        ssh.close()
+        #print "[+] Connection closed!"
+    else:
+        print "[-] Login error!"
+        print "[-] %s" % (result[1])
+
 def main():
-    with open("ssh_targets") as f:
+    '''
+    with open("ssh_targets_with_password") as f:
         for line in f:
             data = line.replace("\n", "").split(" ")
-            auto_change_password(data)
+            auto_change_password_with_password(data)
+            '''
+    with open("ssh_targets_with_key") as f:
+        for line in f:
+            data = line.replace("\n", "").split(" ")
+            auto_change_password_with_key(data)
 
 
 if __name__ == "__main__":
