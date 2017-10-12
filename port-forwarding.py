@@ -67,7 +67,7 @@ def handle(buffer):
 
 def save_payloads(payloads, attacker_host, attacker_port):
     now_time = get_time_human()
-    filename = "%s-%s" % (attacker_host, attacker_port)
+    filename = "%s.txt" % (attacker_host)
     print "[!] Saving payload to localfile : [%s]" % (filename)
     with open(filename, "a+") as f:
         f.write("-" * 32 + "\n")
@@ -75,17 +75,23 @@ def save_payloads(payloads, attacker_host, attacker_port):
         f.write("[%s]\n" % (now_time))
         f.write("-" * 32 + "\n")
         for payload in payloads:
-            f.write("=> %s\n" % (repr(payload)))
+            if payload[0]:
+                f.write("->-> %s\n" % (repr(payload[1])))
+            else:
+                f.write("<-<- %s\n" % (repr(payload[1])))
         f.write("-" * 32 + "\n")
 
 def print_payloads(payloads):
     for payload in payloads:
-        print "=> %s" % (repr(payload))
+        if payload[0]:
+            print "->-> %s" % (repr(payload[1]))
+        else:
+            print "<-<- %s" % (repr(payload[1]))
 
 def get_time_human():
     return time.strftime("%I:%M:%S")
 
-def transfer(src, dst, attacker, attacker_host, attacker_port):
+def transfer(src, dst, attacker, attacker_host, attacker_port, direction):
     global data_recoder
     attacker_hash = hash_host_port(attacker_host, attacker_port)
     src_name = src.getsockname()
@@ -99,7 +105,7 @@ def transfer(src, dst, attacker, attacker_host, attacker_port):
         if len(buffer) == 0:
             print "[-] No data received! Breaking..."
             break
-        data_recoder[attacker_hash].append(buffer)
+        data_recoder[attacker_hash].append((direction, buffer))
         if attacker:
             dst.send(buffer)
         else:
@@ -143,8 +149,8 @@ def server(listen_host, listen_port, remote_host, remote_port, max_connection):
         remote_socket.connect((remote_host, remote_port))
         print "[+] Tunnel connected! Tranfering data..."
         # threads = []
-        s = threading.Thread(target=transfer,args=(remote_socket, attacker_socket, False, attacker_host, attacker_port)) # D2A
-        r = threading.Thread(target=transfer,args=(attacker_socket, remote_socket, True, attacker_host, attacker_port)) # A2D
+        s = threading.Thread(target=transfer,args=(remote_socket, attacker_socket, False, attacker_host, attacker_port, False)) # D2A
+        r = threading.Thread(target=transfer,args=(attacker_socket, remote_socket, True, attacker_host, attacker_port, True)) # A2D
         # threads.append(s)
         # threads.append(r)
         s.start()
