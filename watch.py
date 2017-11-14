@@ -10,11 +10,12 @@ def detect_waf(pathname):
         with open(pathname) as f:
             content = f.read()
             black_list = ["<?", "<%"]
-            if "<" in content:
-                print "[!] Dangerous php script!"
-                print "[*] Content : "
-                print content.rstrip("\n")
-                os.remove(pathname)
+            for black in black_list:
+                if black in content:
+                    print "[!] Dangerous php script!"
+                    print "[*] Content : "
+                    print content.rstrip("\n")
+                    os.remove(pathname)
     except Exception as e:
         print "[-] %s" % (str(e))
 
