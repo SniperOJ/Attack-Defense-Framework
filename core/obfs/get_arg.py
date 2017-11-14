@@ -19,7 +19,7 @@ def get_all(root, arg):
             if file.endswith(".php"):
                 full_path = path + "/" + file
                 content = get_content(full_path)
-                all.append((full_path, find_arg(content, arg)))
+                all.append(("/" + file, find_arg(content, arg)))
     return all
 
 def main():
@@ -29,4 +29,5 @@ def main():
     print get_all(root, "_COOKIE")
 
 if __name__ == "__main__":
-    main()
+    # main()
+    get_all("/etc", "_GET")
