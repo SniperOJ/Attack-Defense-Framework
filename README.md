@@ -12,9 +12,9 @@ An Open Source CTF Attack and Defense Mode Framework
 .
 ├── core
 │   ├── exploit
-│   │   ├── get_flag.py
+│   │   ├── get_flag.py # Please rewrite the function : get_flag in this script
 │   │   ├── __init__.py
-│   │   └── submit_flag.py
+│   │   └── submit_flag.py # Please rewrite the funtion : submit_flag in this script
 │   ├── __init__.py
 │   ├── obfs # fake http requests lib
 │   │   ├── fake_payloads.py
@@ -39,7 +39,7 @@ An Open Source CTF Attack and Defense Mode Framework
 ├── sources # fake_requests.py need it to build fake http requests
 │   └── index.php
 ├── ssh
-│   ├── auto_ssh.py # auto change ssh weak password of other teams, and get flag on the target server then submit them
+│   ├── auto_ssh.py # auto change ssh weak password of other teams
 │   └── targets
 └── targets # define the targets to attack
 ```
