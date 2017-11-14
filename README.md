@@ -43,3 +43,8 @@ An Open Source CTF Attack and Defense Mode Framework
 │   └── targets
 └── targets # define the targets to attack
 ```
+
+#### [LICENSE](https://github.com/WangYihang/Attack_Defense_Framework/blob/master/LICENSE)
+```
+GNU GENERAL PUBLIC LICENSE(Version 3, 29 June 2007)
+```
