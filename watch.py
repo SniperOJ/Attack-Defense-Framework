@@ -10,12 +10,20 @@ def detect_waf(pathname):
         with open(pathname) as f:
             content = f.read()
             black_list = ["<?", "<%"]
+            black_list += ['eval', 'assert']
+            black_list += ['passthru', 'exec', 'system', 'shell_exec', 'popen', 'proc_open']
+            black_list += ['hightlight_file', 'show_source', 'php_strip_whitespace', 'file_get_contents', 'readfile', 'file', 'fopen', 'fread', 'include', 'include_once', 'require', 'require_once', 'fread', 'fgets', 'fpassthru', 'fgetcsv', 'fgetss', 'fscanf', 'parse_ini_file']
+            black_list += ['glob', 'opendir', 'dir', 'readdir', 'scandir']
+            FLAG = False
             for black in black_list:
                 if black in content:
-                    print "[!] Dangerous php script!"
+                    print "[!] Dangerous php script! (%s)" % (black)
                     print "[*] Content : "
                     print content.rstrip("\n")
-                    os.remove(pathname)
+                    FLAG = True
+                    break
+            if FLAG:
+                os.remove(pathname)
     except Exception as e:
         print "[-] %s" % (str(e))
 
