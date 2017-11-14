@@ -34,6 +34,7 @@ An Open Source CTF Attack and Defense Mode Framework
 ├── fake_requests.py # Fake http requests
 ├── LICENSE
 ├── port-forwarding.py
+├── watch.py # Web Directory Monitor via pyinotify
 ├── README.md
 ├── simple-port-multiplier.py # Port Multiplier with HTTP / SSH
 ├── sources # fake_requests.py need it to build fake http requests
