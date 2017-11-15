@@ -4,6 +4,7 @@
 import sys
 import pyinotify
 import os
+import time
 
 def detect_waf(pathname):
     try:
@@ -23,7 +24,9 @@ def detect_waf(pathname):
                     FLAG = True
                     break
             if FLAG:
-                os.remove(pathname)
+                target_path = "webshells/%s.log" % (time.strftime('%Y-%m-%d-%H:%M:%S',time.localtime(time.time())))
+                print "[+] Detect webshell , moving from %s to %s" % (pathname, target_path)
+                os.rename(pathname, target_path)
     except Exception as e:
         print "[-] %s" % (str(e))
 
