@@ -116,10 +116,11 @@ def transfer(src, dst, attacker, attacker_host, attacker_port, direction):
         dst_host = dst_name[0]
         dst_port = dst_name[1]
     while True:
+        time.sleep(0.1)
         if attacker:
-            buffer = src.recv(0x40)
+            buffer = src.recv(0x100)
         else:
-            buffer = src.read(0x40)
+            buffer = src.read(0x100)
         if len(buffer) == 0:
             print "[-] No data received! Breaking..."
             break
@@ -199,6 +200,8 @@ def main():
         print "\tpython %s 0.0.0.0 13337 ./pwnme" % (sys.argv[0])
         print "Author : "
         print "\tWangYihang <wangyihanger@gmail.com>"
+        print "TODO : "
+        print "\tTry to use select/poll/epoll model"
         exit(1)
     LOCAL_HOST = sys.argv[1]
     LOCAL_PORT = int(sys.argv[2])
