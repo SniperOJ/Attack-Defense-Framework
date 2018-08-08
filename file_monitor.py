@@ -9,7 +9,6 @@ from collections import deque
 import threading
 import uuid
 
-# DO NOT APPEND `/` TO POLARIS_END_FRONT (`//` will cause 404 error)
 WORKER_NUMBER = 2
 WORKER_WAIT_TIME = 5
 debug_mode = True
