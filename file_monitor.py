@@ -8,6 +8,8 @@ import time
 from collections import deque
 import threading
 import uuid
+import os
+
 
 WORKER_NUMBER = 2
 WORKER_WAIT_TIME = 5
@@ -18,6 +20,10 @@ jobs = deque([])
 
 def d(data):
     print "[DEBUG] %s" % (data)
+
+
+def e(data):
+    print "[ERROR] %s" % (data)
 
 
 def describe_content(content):
@@ -140,6 +146,10 @@ def main():
     # Get params from cli
     file = sys.argv[1]
     history_log_path = sys.argv[2]
+
+    if os.path.isdir(file):
+        e("Can not monitor on a directory")
+        return
 
     logging.info("Started at <%s>" % (describe_time()))
 
