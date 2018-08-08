@@ -5,13 +5,13 @@ import sys
 import pyinotify
 import logging
 import time
-import requests
 from collections import deque
 import threading
+import uuid
 
 # DO NOT APPEND `/` TO POLARIS_END_FRONT (`//` will cause 404 error)
 WORKER_NUMBER = 2
-WORKER_WAIT_TIME = 1
+WORKER_WAIT_TIME = 5
 debug_mode = True
 logging.basicConfig(filename='pyinotify.log', level=logging.INFO)
 jobs = deque([])
@@ -24,20 +24,25 @@ def d(data):
 def describe_content(content):
     # Assume that content does not contains \n
     if len(content) < 6:
-        return content
-    return content[:3] + "..." + content[-3:]
+        return content.strip()
+    return (content.strip()[:3] + "..." + content.strip()[-3:])
 
 
 def describe_time():
-    return time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime(time.time()))
+    return time.strftime('%Y-%m-%d.%H:%M:%S', time.localtime(time.time()))
 
 
 def record_file_content(content, worker_id):
-    ts = describe_time()
-    record_file = "%s/[%d]%s.log" % (history_log_path, worker_id, ts)
-    d("[*] Recording %s(%s) into %s" % (
+    record_file = "%s/%d.%s.%s.content" % (
+        history_log_path,
+        worker_id,
+        uuid.uuid4(),
+        describe_time(),
+    )
+    d("[*] Recording %s(%s)(%d lines) into %s" % (
         file,
         describe_content(content),
+        len(content.split("\n")),
         record_file,
     ))
     with open(record_file, "a+") as f:
@@ -70,12 +75,12 @@ def file_snapshot(file, worker_id):
                 if result:
                     d("[+][%d] Content (%s) recorded" % (
                         worker_id,
-                        job['content']
+                        describe_content(job['content']),
                     ))
                 else:
                     d("[-][%d] Content (%s) *didn't* accepted" % (
                         worker_id,
-                        job['content']
+                        describe_content(job['content']),
                     ))
                     # Add queue, waiting for resubmit
                     job['status'] = False
