@@ -5,6 +5,10 @@ Attack and Defense Framework
 An Open Source CTF Attack and Defense Mode Framework
 ```
 
+#### Examples
+Flag submit server
+
+![Image](https://upload-images.jianshu.io/upload_images/2355077-9158e3a59ef809ac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 #### Scripts
 
@@ -44,6 +48,9 @@ An Open Source CTF Attack and Defense Mode Framework
 │   └── targets
 └── targets # define the targets to attack
 ```
+
+#### Acknownledgement
+* [haozigege@lancet](https://github.com/zhl2008/flag_service)
 
 #### [LICENSE](https://github.com/WangYihang/Attack_Defense_Framework/blob/master/LICENSE)
 ```
