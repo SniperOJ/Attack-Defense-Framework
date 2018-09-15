@@ -29,7 +29,7 @@ port = 4444
 
 # remote flag submit	
 # remote_flag_url = 'https://172.16.4.1/Common/awd_sub_answer'
-remote_flag_url = 'http://127.0.0.1/Common/awd_sub_answer.php'
+remote_flag_url = 'http://127.0.0.1:8099/Common/awd_sub_answer.php'
 
 # team token
 token = '29b64ae71bb4fd763ad6520c91607a88'
@@ -49,7 +49,7 @@ time_span = 2
 time_out = 5
 
 # flag submit log
-log_file = './log'
+log_file = './log.cvs'
 
 # load flag from this file
 recover_file = './recover'
@@ -61,26 +61,50 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 ########## Log functions #########
 def l(item, status):
     with open(log_file, "a+") as f:
-        f.write(status + " " + str(item) + "\n")
+        if len(f.read()) == 0:
+            f.write("status,challenge,victim,attacker,flag,ts\n")
+
+    with open(log_file, "a+") as f:
+        data = ",".join([
+            status,
+            item['challenge'],
+            item['victim'],
+            item['attacker'],
+            item['flag'],
+            str(item['ts']),
+        ])
+        f.write(data + "\n")
 
 def s(item):
     with open(recover_file, "a+") as f:
-	data = "%s:%s:%s" % (item['flag'], item['ip'], item['ts'])
+	data = "%s,%s,%s,%s,%s" % (
+            item['challenge'], 
+            item['victim'], 
+            item['attacker'], 
+            item['flag'], 
+            str(item['ts']),
+        )
         f.write(data + "\n")
 ############################
 
 ########## Recover #########
 queue = deque([])
 with open(recover_file, "a+") as f:
+    '''
+    status,challenge,victim,attacker,flag,ts
+    '''
     logging.info("Recovering flag from file")
     for line in f:
-        data = line.strip().split(":")
+        data = line.strip().split(",")
         item = {
-            "flag":data[0],
-            "ip":data[1],
-            "ts":float(data[2]),
+            "challenge":data[0],
+            "victim":data[1],
+            "attacker":data[2],
+            "flag":data[3],
+            "ts":float(data[4]),
         }
         queue.append(item)
+
 logging.info("[%d] items recoverd" % (len(queue)))
 with open(recover_file, "w") as f:
     logging.info("Cleaning recover file")
@@ -114,7 +138,7 @@ def flag_submit():
         queue.appendleft(item)
         logging.info("[%d] %s" % (len(queue), item))
         flag = item['flag']
-        ip = item['ip']
+        attacker = item['attacker']
         ts = item['ts']
 
         data = {
@@ -151,7 +175,9 @@ def flag_submit():
 
 class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
-        # logging.info('"%s" %s %s',self.requestline, str(code), str(size))
+        '''
+        logging.info('"%s" %s %s',self.requestline, str(code), str(size))
+        '''
         pass
 
     def log_message(self, format, *args):
@@ -159,44 +185,6 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def log_error(self, format, *args):
         pass
-
-    def do_GET(self):
-        if self.path.startswith('/submit'):
-            self.submit_handler()
-            return
-        self.error_handle('404 not found')
-
-    def submit_handler(self):
-        params = parse_qs(urlparse(self.path).query)
-        # flag to send
-        if not params.has_key('flag'):
-            self.error_handle('no flag provided!')
-            return
-
-        flag = params['flag'][0]
-        ip = self.client_address[0]
-        ts = time.time()
-
-        flag = search_flag(flag)
-
-        if flag == "":
-            self.error_handle('flag check error!')
-            return
-
-        item = {
-            "flag":flag,
-            "ip":ip,
-            "ts":ts,
-        }
-
-        queue.append(item)
-
-        response = {
-            "status":"true",
-            "queue":len(queue),
-        }
-        self.success_handle(str(response))
-
 
     def error_handle(self,msg):
         self.send_response(404)
@@ -210,6 +198,53 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(msg)
 
+    def do_GET(self):
+        if self.path.startswith('/submit'):
+            self.submit_handler()
+            return
+        if self.path.startswith('/queue'):
+            self.success_handle(str(queue))
+            return
+        if self.path.startswith('/log'):
+            self.success_handle(open(log_file).read())
+            return
+        self.error_handle('404 not found')
+
+    def submit_handler(self):
+        params = parse_qs(urlparse(self.path).query)
+
+        params_list = [
+                "challenge",
+                "victim",
+                "attacker",
+                "flag",
+        ]
+        for param in params_list:
+            if not params.has_key(param):
+                self.error_handle('no %s provided!' % param)
+                return
+
+        flag = search_flag(params['flag'][0])
+
+        if flag == "":
+            self.error_handle('flag check error!')
+            return
+
+        item = {
+	    "challenge":params['challenge'][0],
+	    "victim":params['victim'][0],
+	    "attacker":params['attacker'][0],
+	    "flag":flag,
+	    "ts":time.time(),
+        }
+
+        queue.append(item)
+
+        response = {
+            "status":"true",
+            "queue":len(queue),
+        }
+        self.success_handle(str(response))
 
 # update the server_bind function to reuse the port 
 class MyTCPServer(SocketServer.TCPServer):
