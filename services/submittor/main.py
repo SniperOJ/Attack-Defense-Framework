@@ -29,10 +29,10 @@ port = 4444
 
 # remote flag submit	
 # remote_flag_url = 'https://172.16.4.1/Common/awd_sub_answer'
-remote_flag_url = 'http://127.0.0.1:8099/Common/awd_sub_answer.php'
-
 # team token
-token = '29b64ae71bb4fd763ad6520c91607a88'
+token = '443ee509c8f1c0ea'
+
+remote_flag_url = 'https://submission.pwnable.org/flag.php'
 
 # team cookie
 team_cookie = {
@@ -40,10 +40,14 @@ team_cookie = {
 }
 
 # flag regex pattern
-flag_regex_pattern = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}"
+# flag_regex_pattern = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}"
+# 7bf49014aef1285b7835ab0147e7137c
+flag_regex_pattern = "[0-9a-fA-F]{32}"
+# flag_regex_pattern = "[0-9a-fA-F]{64}"
+# flag_regex_pattern = "flag\{[0-9a-fA-F]{32}\}"
 
 # flag submit span
-time_span = 2
+time_span = 0.5
 
 # request time out
 time_out = 5
@@ -141,31 +145,36 @@ def flag_submit():
         attacker = item['attacker']
         ts = item['ts']
 
-        data = {
+        params = {
             'token':token,
-            'answer':flag
+            'flag':flag
         }
 
         try:
             result = requests.post(
                 remote_flag_url,
-                cookies=team_cookie,
-                data=data,
+                params=params,
                 timeout=time_out,
-                verify=False
+                verify=False,
             ).content.lower().strip()
+            print "Response: %s" %  result
             time.sleep(time_span)
             if "retry" in result:
                 logging.warning("Retry: %s" % (item))
                 l(item, "RETRY")
                 continue
-            if "right" in result:
-                logging.debug("Right flag: %s" % (item))
+            if "correct" in result:
+                logging.debug("correct flag: %s" % (item))
                 queue.popleft()
-                l(item, "RIGHT")
+                l(item, "correct")
                 continue
-            if "wrong" in result:
-                logging.error("Wrong flag: %s" % (item))
+            if "duplicated" in result:
+                logging.debug("Dumplicated flag: %s" % (item))
+                queue.popleft()
+                l(item, "duplicated")
+                continue
+            if "invalid" in result:
+                logging.error("invalid flag: %s" % (item))
                 queue.popleft()
                 l(item, "WRONG")
                 continue
@@ -245,6 +254,9 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             "queue":len(queue),
         }
         self.success_handle(str(response))
+
+
+
 
 # update the server_bind function to reuse the port 
 class MyTCPServer(SocketServer.TCPServer):
