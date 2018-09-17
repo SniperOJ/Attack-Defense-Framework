@@ -1,0 +1,3 @@
+[submodule "services/codimd-container"]
+	path = services/codimd-container
+	url = https://github.com/hackmdio/codimd-container.git
