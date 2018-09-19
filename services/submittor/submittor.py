@@ -271,4 +271,3 @@ t.start()
 httpd = MyTCPServer((host, port), CustomHTTPRequestHandler)
 logging.debug("Server running at %s:%d" % (host, port))
 httpd.serve_forever()
-
