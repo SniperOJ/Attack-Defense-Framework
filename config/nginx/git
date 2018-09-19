@@ -1,0 +1,12 @@
+server {
+	listen 80;
+	server_name git;
+
+	location / {
+		auth_basic "Git";
+		auth_basic_user_file auth/basic;
+		autoindex on;
+		proxy_pass http://localhost:60002;
+	}
+}
+
