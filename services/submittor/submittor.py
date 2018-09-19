@@ -28,15 +28,15 @@ host = "127.0.0.1"
 port = 4444
 
 # remote flag submit	
-# remote_flag_url = 'https://172.16.4.1/Common/awd_sub_answer'
+remote_flag_url = 'https://submission.pwnable.org/flag.php'
+
 # team token
 token = '443ee509c8f1c0ea'
 
-remote_flag_url = 'https://submission.pwnable.org/flag.php'
 
 # team cookie
-team_cookie = {
-    "PHPSESSID":"sa7d5sa67d2gd1y9saa9a"
+cookies = {
+    "PHPSESSID":""
 }
 
 # flag regex pattern
@@ -57,7 +57,6 @@ log_file = './log.cvs'
 
 # load flag from this file
 recover_file = './recover'
-
 coloredlogs.install(level='debug')
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 ############################
@@ -155,6 +154,7 @@ def flag_submit():
                 remote_flag_url,
                 params=params,
                 timeout=time_out,
+                cookies=cookies,
                 verify=False,
             ).content.lower().strip()
             print "Response: %s" %  result

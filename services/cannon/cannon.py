@@ -8,9 +8,6 @@ import time
 import datetime
 from Queue import Queue
 
-from core.exploit.submit_flag import *
-from core.exploit.get_flag import *
-
 # Job control
 jobs = Queue()
 WORKER_NUMBER = 30
@@ -25,14 +22,18 @@ def worker(wid):
     while True:
         job = jobs.get()
         d("[WORKER[%d]] %s" % (wid, job))
-        flag = myget_flag(job['host'], job['port'])
-        d("[WORKER(%d)] Got flag: %s" % (wid, flag))
-        submit = mysubmit_flag(
-            job['challenge'], 
-            "%s:%d" % (job['host'],job['port']),
-            "zblee",
-            flag,
-        )
+        result = Exploit(job['host'], job['port'], 5).run()
+        if result[0]:
+            d("[WORKER(%d)] Got flag: %s" % (wid, flag))
+            mysubmit_flag(
+                job['challenge'], 
+                "%s:%d" % (job['host'],job['port']),
+                "UNKNOWN",
+                flag,
+            )
+        else:
+            d("[WORKER(%d)] Got flag: %s" % (wid, flag))
+
 
 def start_workers():
     for i in range(WORKER_NUMBER):
