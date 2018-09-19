@@ -1,3 +1,6 @@
-[submodule "services/codimd-container"]
-	path = services/codimd-container
+[submodule "services/hackmd"]
+	path = services/hackmd
 	url = https://github.com/hackmdio/codimd-container.git
+[submodule "services/sirius"]
+	path = services/sirius
+	url = https://github.com/WangYihang/Sirius
