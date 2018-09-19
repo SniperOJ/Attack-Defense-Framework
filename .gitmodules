@@ -4,3 +4,6 @@
 [submodule "services/sirius"]
 	path = services/sirius
 	url = https://github.com/WangYihang/Sirius
+[submodule "services/ctf-wiki"]
+	path = services/ctf-wiki
+	url = https://github.com/ctf-wiki/ctf-wiki
