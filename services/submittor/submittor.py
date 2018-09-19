@@ -33,7 +33,6 @@ remote_flag_url = 'https://submission.pwnable.org/flag.php'
 # team token
 token = '443ee509c8f1c0ea'
 
-
 # team cookie
 cookies = {
     "PHPSESSID":""
@@ -131,7 +130,6 @@ def search_flag(flag):
     else:
         return result.group()
 
-
 def flag_submit():
     while True:
         if len(queue) == 0:
@@ -184,9 +182,6 @@ def flag_submit():
 
 class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
-        '''
-        logging.info('"%s" %s %s',self.requestline, str(code), str(size))
-        '''
         pass
 
     def log_message(self, format, *args):
@@ -195,33 +190,17 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_error(self, format, *args):
         pass
 
-    def error_handle(self,msg):
-        self.send_response(404)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        self.wfile.write(msg)
-
-    def success_handle(self,msg):
+    def success_handler(self,msg):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(msg)
 
     def do_GET(self):
-        if self.path.startswith('/submit'):
-            self.submit_handler()
-            return
-        if self.path.startswith('/queue'):
-            self.success_handle(str(queue))
-            return
-        if self.path.startswith('/log'):
-            self.success_handle(open(log_file).read())
-            return
-        self.error_handle('404 not found')
+        self.submit_handler()
 
     def submit_handler(self):
         params = parse_qs(urlparse(self.path).query)
-
         params_list = [
                 "challenge",
                 "victim",
