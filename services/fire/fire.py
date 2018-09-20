@@ -61,7 +61,7 @@ def submit(challenge, victim, attacker, flag, log_id):
         response = requests.get(url, params=params, timeout=1)
         return response.content
     except Exception as e:
-        logging.error(str(e))
+        return e
 
 
 def worker(wid):

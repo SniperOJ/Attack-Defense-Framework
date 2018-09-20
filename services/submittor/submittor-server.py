@@ -20,7 +20,11 @@ import ConfigParser
 from time import gmtime, strftime
 from urlparse import parse_qs,urlparse
 from collections import deque
+import logging
+import coloredlogs
 
+coloredlogs.install(level='debug', fmt='%(asctime)s %(levelname)s\t%(message)s')
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 ###### configuration #######
 config = ConfigParser.ConfigParser()
@@ -58,7 +62,6 @@ log_file = './log.cvs'
 
 # load flag from this file
 recover_file = './recover'
-coloredlogs.install(level='debug')
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 ############################
 
@@ -142,14 +145,12 @@ def update_log_status(log_id, status):
         "log",
         int(log_id),
     )
-    print url
     data = {
         "status":status,
     }
     response = requests.patch(url, headers={
         'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
     }, data=data)
-    print response.content
 
 
 def flag_submit():
@@ -159,12 +160,10 @@ def flag_submit():
             continue
         item = queue.popleft()
         queue.appendleft(item)
-        logging.info("[%d] %s" % (len(queue), item))
         flag = item['flag']
         attacker = item['attacker']
         ts = item['ts']
         log_id = int(item['id'])
-        print item
 
         # Update Log status to pending
         update_log_status(log_id, "PENDING")
@@ -182,15 +181,14 @@ def flag_submit():
                 cookies=cookies,
                 verify=False,
             ).content.lower().strip()
-            print "Response: %s" %  result
             time.sleep(time_span)
             if "retry" in result:
-                logging.warning("Retry: %s" % (item))
+                logging.warn("Retry: %s" % (item))
                 l(item, "RETRY")
                 update_log_status(log_id, "FRESH")
                 continue
             if "right" in result:
-                logging.debug("right flag: %s" % (item))
+                logging.info("right flag: %s" % (item))
                 queue.popleft()
                 l(item, "right")
                 update_log_status(log_id, "RIGHT")
