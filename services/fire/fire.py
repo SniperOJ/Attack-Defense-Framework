@@ -3,37 +3,111 @@
 
 import sys
 import thread
+import requests
+import ConfigParser
+import importlib
+import json
 import threading
 import time
 import datetime
 from Queue import Queue
+import logging
+import coloredlogs
+
+coloredlogs.install(level='debug', fmt='%(asctime)s %(levelname)s\t%(message)s')
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+config = ConfigParser.ConfigParser()
+config.read('./config.ini')  
 
 # Job control
 jobs = Queue()
-WORKER_NUMBER = 30
+WORKER_NUMBER = 4
 EXPLOIT_TIMEOUT = 10
 ROUND_TIME = 60 * 9
 CTF_START_TIME = datetime.datetime(2018, 9, 16, 9, 0, 0, 0)
 
-def d(message):
-    sys.stdout.write("[DEBUG]: %s\n" % (message))
-
 def worker(wid):
     while True:
         job = jobs.get()
-        d("[WORKER[%d]] %s" % (wid, job))
-        result = Exploit(job['host'], job['port'], 5).run()
-        if result[0]:
-            d("[WORKER(%d)] Got flag: %s" % (wid, flag))
-            mysubmit_flag(
-                job['challenge'], 
-                "%s:%d" % (job['host'],job['port']),
-                "UNKNOWN",
-                flag,
-            )
+        description = "%s => %s [%s:%d]" % (
+            job['team']['name'],
+            job['challenge']['name'],
+            job['host'],
+            job['port'],
+        )
+        # logging.debug("[WORKER[%d]] %s"  % (wid, description))
+        target = {
+            "team":job['team'],
+            "host":job['host'],
+            "port":job['port'],
+        }
+        filename = job['filename'].replace(".py", "")
+        enable = job['enable']
+        if enable:
+            module = importlib.import_module("exploits.%s" % (filename))
+            result = module.Exploit(job['author'], job['challenge']).run(target)
+            if result[0]:
+                flag = result[1]
+                logging.info("[WORKER(%d)] %s => %s" % (wid, description, flag))
+                # Create Log
+            else:
+                flag = result[1]
+                logging.error("[WORKER(%d)] %s => %s" % (wid, description, flag))
         else:
-            d("[WORKER(%d)] Got flag: %s" % (wid, flag))
+            logging.warn("[WORKER(%d)] %s disabled" % (wid, description))
 
+def query(model):
+    url = "http://%s:%s/api/%s/" % (
+        config.get("sirius", "host"), 
+        config.get("sirius", "port"), 
+        model
+    )
+    content = requests.get(url, headers={
+        'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+    }).content
+    return json.loads(content)
+
+def cacheget(cache, url):
+    if url in cache.keys():
+        return cache[url]
+    content = requests.get(url, headers={
+        'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+    }).content
+    cache[url] = content
+    return content
+
+def load_jobs():
+    cache = dict()
+    targets = query("target")
+    for target in targets:
+        cache_list = [
+            'challenge',
+            'team',
+        ]
+        for cache_key in cache_list:
+            target[cache_key] = json.loads(cacheget(cache, target[cache_key]))
+
+    exploits = query("exploit")
+    for exploit in exploits:
+        cache_list = [
+            'challenge',
+        ]
+        for cache_key in cache_list:
+            exploit[cache_key] = json.loads(cacheget(cache, exploit[cache_key]))
+        for target in targets:
+            if target['challenge'] == exploit['challenge']:
+                job = {
+                    "challenge":target['challenge'],
+                    "enable":target['enable'],
+                    "team":target['team'],
+                    "host":target['host'],
+                    "port":target['port'],
+                    "filename":exploit['filename'],
+                    "author":exploit['author'],
+                    "priority":exploit['priority'],
+                }
+                jobs.put(job)
 
 def start_workers():
     for i in range(WORKER_NUMBER):
@@ -49,29 +123,17 @@ while True:
     round_start_time = datetime.datetime.now()
     print round_start_time
     round_number = (round_start_time - CTF_START_TIME).seconds * 1.0 / ROUND_TIME
-    d("The %d round started" % (round_number))
+    logging.debug("The %d round started" % (round_number))
     # Generate jobs
-    d("Loading victims...")
-    with open("targets") as f:
-        for line in f:
-            '''
-            challenge,host,port,hostname
-            '''
-            items = line.split(",")
-            job = dict()
-            job['challenge'] = items[0]
-            job['host'] = items[1]
-            job['port'] = int(items[2])
-            job['hostname'] = items[3]
-            jobs.put(job)
-            print job
+    logging.debug("Loading victims...")
+    load_jobs()
     round_end_time = datetime.datetime.now()
     # Ensure sync with offical round
 
-    d("Sleeping %d second for the next round" % (ROUND_TIME - (round_end_time - round_start_time).seconds))
+    logging.debug("Sleeping %d second for the next round" % (ROUND_TIME - (round_end_time - round_start_time).seconds))
     sleep_time = ROUND_TIME - (round_end_time - round_start_time).seconds
     sleeped_time = 0
     for i in range(sleep_time):
         time.sleep(1)
-        d("%d/%d => %s" % (sleeped_time, sleep_time, datetime.datetime.now()))
+        sys.stderr.write("%d/%d\r" % (sleeped_time, sleep_time))
         sleeped_time += 1
