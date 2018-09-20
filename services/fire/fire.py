@@ -22,10 +22,47 @@ config.read('./config.ini')
 
 # Job control
 jobs = Queue()
-WORKER_NUMBER = 4
+WORKER_NUMBER = 1
 EXPLOIT_TIMEOUT = 10
-ROUND_TIME = 30
+ROUND_TIME = 10
 CTF_START_TIME = datetime.datetime(2018, 9, 16, 9, 0, 0, 0)
+
+def create_log(exploit_url, target_url, flag):
+    url = "http://%s:%d/api/%s/" % (
+        config.get("sirius", "host"), 
+        int(config.get("sirius", "port")), 
+        "log",
+    )
+    data = {
+        "exploit":exploit_url,
+        "target":target_url,
+        "flag":flag,
+    }
+    response = requests.post(url, headers={
+        'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+    }, data=data)
+    content = response.content
+    log_id = json.loads(content)['id']
+    return log_id, response.status_code
+
+def submit(challenge, victim, attacker, flag, log_id):
+    url = "http://%s:%d/submit" % (
+        config.get("submittor", "host"),
+        int(config.get("submittor", "port")),
+    )
+    params = {
+        "challenge":challenge,
+        "victim":victim,
+        "attacker":attacker,
+        "flag":flag,
+        "id":log_id,
+    }
+    try:
+        response = requests.get(url, params=params, timeout=1)
+        return response.content
+    except Exception as e:
+        logging.error(str(e))
+
 
 def worker(wid):
     while True:
@@ -36,7 +73,7 @@ def worker(wid):
             job['host'],
             job['port'],
         )
-        logging.debug("[WORKER[%d]] %s"  % (wid, description))
+        # logging.debug("[WORKER[%d]] %s"  % (wid, description))
         target = {
             "team":job['team'],
             "host":job['host'],
@@ -44,48 +81,32 @@ def worker(wid):
         }
         filename = job['filename'].replace(".py", "")
         enable = job['enable']
-        if enable:
-            module = importlib.import_module("exploits.%s" % (filename))
-            result = module.Exploit(job['author'], job['challenge']).run(target)
-            flag = result[1]
-            # Create Log
-            url = "http://%s:%d/api/%s/" % (
-                config.get("sirius", "host"), 
-                int(config.get("sirius", "port")), 
-                "log",
-            )
-            data = {
-                "exploit":job['exploit_url'],
-                "flag":flag,
-                "target":job['target_url'],
-            }
-            response = requests.post(url, headers={
-                'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
-            }, data=data)
-            content = response.content
-            log_id = json.loads(content)['id']
-            if response.status_code != 201:
-                logging.warn(content)
-            if result[0]:
-                logging.info("[WORKER(%d)] %s => %s" % (wid, description, flag))
-                # Submit
-                url = "http://%s:%d/submit" % (
-                    config.get("submittor", "host"),
-                    int(config.get("submittor", "port")),
-                )
-                params = {
-                    "challenge":job['challenge']['name'],
-                    "victim":job['team']['name'],
-                    "attacker":"%s:%s" % (job['author'], job['filename']),
-                    "flag":flag,
-                    "id":log_id,
-                }
-                response = requests.get(url, params=params)
-                print response.content
-            else:
-                logging.error("[WORKER(%d)] %s => %s" % (wid, description, flag))
-        else:
+
+        if not enable:
             logging.warn("[WORKER(%d)] %s disabled" % (wid, description))
+            continue
+
+        module = importlib.import_module("exploits.%s" % (filename))
+        result = module.Exploit(job['author'], job['challenge']).run(target)
+        flag = result[1]
+        log_id, status_code = create_log(
+                job['exploit_url'],
+                job['target_url'],
+                flag,
+        )
+        if status_code != 201:
+            logging.warn(content)
+        if result[0]:
+            logging.info("[WORKER(%d)] %s => %s" % (wid, description, flag))
+            logging.debug(submit(
+                job['challenge']['name'],
+                job['team']['name'],
+                "%s:%s" % (job['author'], job['filename']),
+                flag,
+                log_id,
+            ))
+        else:
+            logging.error("[WORKER(%d)] %s => %s" % (wid, description, flag))
 
 def query(model):
     url = "http://%s:%d/api/%s/" % (
@@ -156,7 +177,6 @@ def load_jobs():
                     "author":exploit['author'],
                     "priority":exploit['priority'],
                 }
-                print job
                 jobs.put(job)
 
 def start_workers():
@@ -171,15 +191,15 @@ start_workers()
 # Job dispatcher
 while True:
     round_start_time = datetime.datetime.now()
-    print round_start_time
+    logging.info(round_start_time)
     round_number = (round_start_time - CTF_START_TIME).seconds * 1.0 / ROUND_TIME
     logging.debug("The %d round started" % (round_number))
     # Generate jobs
     logging.debug("Loading victims...")
     load_jobs()
+    logging.debug("Queue size: %d" % jobs.qsize())
     round_end_time = datetime.datetime.now()
     # Ensure sync with offical round
-
     logging.debug("Sleeping %d second for the next round" % (ROUND_TIME - (round_end_time - round_start_time).seconds))
     sleep_time = ROUND_TIME - (round_end_time - round_start_time).seconds
     sleeped_time = 0
