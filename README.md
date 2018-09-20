@@ -6,47 +6,54 @@ An Open Source CTF Attack and Defense Mode Framework
 ```
 
 #### Examples
-Flag submit server
+> Fire Service  
 
-![Image](https://upload-images.jianshu.io/upload_images/2355077-9158e3a59ef809ac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![Image](https://upload-images.jianshu.io/upload_images/2355077-ee95171cdbf0d94d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+> Flag Service  
+
+![Image](https://upload-images.jianshu.io/upload_images/2355077-280e23fbbe848ecd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+> UI Service  
+
+![Image](https://upload-images.jianshu.io/upload_images/2355077-c34fe47bf341698b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 
 #### Scripts
 
 ```
+➜  utils git:(v2) ✗ tree
 .
-├── core
-│   ├── exploit
-│   │   ├── get_flag.py # Please rewrite the function : get_flag in this script
-│   │   ├── __init__.py
-│   │   └── submit_flag.py # Please rewrite the funtion : submit_flag in this script
-│   ├── __init__.py
-│   ├── obfs # fake http requests lib
-│   │   ├── fake_payloads.py
-│   │   ├── get_arg.py
-│   │   └── __init__.py
-│   └── php
-│       ├── code_exec_bomb.py
-│       ├── code_exec.py
-│       ├── __init__.py
-│       ├── shell_exec_bomb.py
-│       └── shell_exec.py
-├── deamon # Dual process daemon Webshell
+├── deamon
 │   ├── bash.txt
 │   ├── code.php
 │   └── php.txt
-├── exploit_all.py # Exploit all the gameboxes
-├── fake_requests.py # Fake http requests
-├── LICENSE
-├── port-forwarding.py
-├── watch.py # Web Directory Monitor via pyinotify
-├── README.md
-├── simple-port-multiplier.py # Port Multiplier with HTTP / SSH
-├── sources # fake_requests.py need it to build fake http requests
-│   └── index.php
-├── ssh
-│   ├── auto_ssh.py # auto change ssh weak password of other teams
-│   └── targets
-└── targets # define the targets to attack
+├── flow
+│   ├── out.port-forwarding.py
+│   ├── patch-change-flag.py
+│   ├── port-forwarding-change-flag.py
+│   ├── port-forwarding.py
+│   └── simple-port-multiplier.py
+├── fs
+│   ├── file_monitor.py
+│   ├── sync
+│   │   ├── README.md
+│   │   ├── sync.sh
+│   │   └── watch.py
+│   └── watch.py
+├── generator
+│   └── iprange.py
+├── php
+│   ├── code_exec_bomb.py
+│   ├── code_exec.py
+│   ├── __init__.py
+│   ├── shell_exec_bomb.py
+│   └── shell_exec.py
+└── ssh
+    ├── auto_ssh.py
+    └── targets
+
+7 directories, 21 files
 ```
 #### TODO
 - [ ] websocket
