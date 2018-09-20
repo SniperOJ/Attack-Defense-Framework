@@ -24,7 +24,7 @@ config.read('./config.ini')
 jobs = Queue()
 WORKER_NUMBER = 4
 EXPLOIT_TIMEOUT = 10
-ROUND_TIME = 60 * 9
+ROUND_TIME = 30
 CTF_START_TIME = datetime.datetime(2018, 9, 16, 9, 0, 0, 0)
 
 def worker(wid):
@@ -67,6 +67,7 @@ def worker(wid):
                 'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
             }, data=data)
             content = response.content
+            print content
             if response.status_code != 201:
                 logging.warn(content)
         else:
