@@ -16,19 +16,22 @@ import re
 import coloredlogs
 import threading 
 import time
+import ConfigParser
 from time import gmtime, strftime
 from urlparse import parse_qs,urlparse
 from collections import deque
 
 
 ###### configuration #######
+config = ConfigParser.ConfigParser()
+config.read('./config.ini')  
 
 # the listen port
 host = "127.0.0.1"
 port = 4444
 
 # remote flag submit	
-remote_flag_url = 'https://submission.pwnable.org/flag.php'
+remote_flag_url = 'http://127.0.0.1:50000/flag.php'
 
 # team token
 token = '443ee509c8f1c0ea'
@@ -40,8 +43,7 @@ cookies = {
 
 # flag regex pattern
 # flag_regex_pattern = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}"
-# 7bf49014aef1285b7835ab0147e7137c
-flag_regex_pattern = "[0-9a-fA-F]{32}"
+flag_regex_pattern = "flag\{[0-9a-fA-F]{32}\}"
 # flag_regex_pattern = "[0-9a-fA-F]{64}"
 # flag_regex_pattern = "flag\{[0-9a-fA-F]{32}\}"
 
@@ -64,10 +66,11 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 def l(item, status):
     with open(log_file, "a+") as f:
         if len(f.read()) == 0:
-            f.write("status,challenge,victim,attacker,flag,ts\n")
+            f.write("id,status,challenge,victim,attacker,flag,ts\n")
 
     with open(log_file, "a+") as f:
         data = ",".join([
+            str(item['id']),
             status,
             item['challenge'],
             item['victim'],
@@ -79,7 +82,8 @@ def l(item, status):
 
 def s(item):
     with open(recover_file, "a+") as f:
-	data = "%s,%s,%s,%s,%s" % (
+	data = "%d,%s,%s,%s,%s,%s" % (
+            str(item['id']),
             item['challenge'], 
             item['victim'], 
             item['attacker'], 
@@ -93,17 +97,18 @@ def s(item):
 queue = deque([])
 with open(recover_file, "a+") as f:
     '''
-    status,challenge,victim,attacker,flag,ts
+    id,status,challenge,victim,attacker,flag,ts
     '''
     logging.info("Recovering flag from file")
     for line in f:
         data = line.strip().split(",")
         item = {
-            "challenge":data[0],
-            "victim":data[1],
-            "attacker":data[2],
-            "flag":data[3],
-            "ts":float(data[4]),
+            "id":int(data[0]),
+            "challenge":data[1],
+            "victim":data[2],
+            "attacker":data[3],
+            "flag":data[4],
+            "ts":float(data[5]),
         }
         queue.append(item)
 
@@ -114,13 +119,13 @@ with open(recover_file, "w") as f:
 ############################
 
 ########## CTRL+C #########
-def sigint_handler(signum, frame):
+def sigint_handle(signum, frame):
     for item in queue:
         logging.info("Saveing recover data: %s" % (item))
 	s(item)
     exit(0)
 
-signal.signal(signal.SIGINT, sigint_handler)
+signal.signal(signal.SIGINT, sigint_handle)
 ############################
 
 def search_flag(flag):
@@ -129,6 +134,23 @@ def search_flag(flag):
         return ""
     else:
         return result.group()
+
+def update_log_status(log_id, status):
+    url = "http://%s:%d/api/%s/%d/" % (
+        config.get("sirius", "host"), 
+        int(config.get("sirius", "port")), 
+        "log",
+        int(log_id),
+    )
+    print url
+    data = {
+        "status":status,
+    }
+    response = requests.patch(url, headers={
+        'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+    }, data=data)
+    print response.content
+
 
 def flag_submit():
     while True:
@@ -141,6 +163,11 @@ def flag_submit():
         flag = item['flag']
         attacker = item['attacker']
         ts = item['ts']
+        log_id = int(item['id'])
+        print item
+
+        # Update Log status to pending
+        update_log_status(log_id, "PENDING")
 
         params = {
             'token':token,
@@ -160,21 +187,19 @@ def flag_submit():
             if "retry" in result:
                 logging.warning("Retry: %s" % (item))
                 l(item, "RETRY")
+                update_log_status(log_id, "FRESH")
                 continue
-            if "correct" in result:
-                logging.debug("correct flag: %s" % (item))
+            if "right" in result:
+                logging.debug("right flag: %s" % (item))
                 queue.popleft()
-                l(item, "correct")
+                l(item, "right")
+                update_log_status(log_id, "RIGHT")
                 continue
-            if "duplicated" in result:
-                logging.debug("Dumplicated flag: %s" % (item))
-                queue.popleft()
-                l(item, "duplicated")
-                continue
-            if "invalid" in result:
-                logging.error("invalid flag: %s" % (item))
+            if "wrong" in result:
+                logging.error("wrong flag: %s" % (item))
                 queue.popleft()
                 l(item, "WRONG")
+                update_log_status(log_id, "WRONG")
                 continue
             logging.error("Unknown response: %s" % (result))
         except Exception as e:
@@ -190,22 +215,29 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_error(self, format, *args):
         pass
 
-    def success_handler(self,msg):
+    def success_handle(self,msg):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(msg)
 
-    def do_GET(self):
-        self.submit_handler()
+    def error_handle(self,msg):
+        self.send_response(500)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(msg)
 
-    def submit_handler(self):
+    def do_GET(self):
+        self.submit_handle()
+
+    def submit_handle(self):
         params = parse_qs(urlparse(self.path).query)
         params_list = [
                 "challenge",
                 "victim",
                 "attacker",
                 "flag",
+                "id",
         ]
         for param in params_list:
             if not params.has_key(param):
@@ -224,6 +256,7 @@ class CustomHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	    "attacker":params['attacker'][0],
 	    "flag":flag,
 	    "ts":time.time(),
+            "id":params['id'][0]
         }
 
         queue.append(item)
