@@ -51,6 +51,22 @@ def worker(wid):
                 flag = result[1]
                 logging.info("[WORKER(%d)] %s => %s" % (wid, description, flag))
                 # Create Log
+                url = "http://%s:%s/api/%s/" % (
+                    config.get("sirius", "host"), 
+                    config.get("sirius", "port"), 
+                    "log",
+                )
+                data = {
+                    "exploit":job['exploit_url'],
+                    "flag":flag,
+                    "target":job['target_url'],
+                }
+                response = requests.post(url, headers={
+                    'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+                }, data=data)
+                content = response.content
+                if response.status_code != 201:
+                    logging.warn(content)
             else:
                 flag = result[1]
                 logging.error("[WORKER(%d)] %s => %s" % (wid, description, flag))
@@ -80,7 +96,15 @@ def cacheget(cache, url):
 def load_jobs():
     cache = dict()
     targets = query("target")
+    i = 0
     for target in targets:
+        i += 1
+        target['target_url'] = "http://%s:%s/api/%s/%d/" % (
+            config.get("sirius", "host"), 
+            config.get("sirius", "port"), 
+            "target",
+            i,
+        )
         cache_list = [
             'challenge',
             'team',
@@ -89,7 +113,16 @@ def load_jobs():
             target[cache_key] = json.loads(cacheget(cache, target[cache_key]))
 
     exploits = query("exploit")
+    i = 0
     for exploit in exploits:
+        i += 1
+        exploit['exploit_url'] = "http://%s:%s/api/%s/%d/" % (
+            config.get("sirius", "host"), 
+            config.get("sirius", "port"), 
+            "exploit",
+            i,
+        )
+
         cache_list = [
             'challenge',
         ]
@@ -98,6 +131,8 @@ def load_jobs():
         for target in targets:
             if target['challenge'] == exploit['challenge']:
                 job = {
+                    "target_url":target['target_url'],
+                    "exploit_url":exploit['exploit_url'],
                     "challenge":target['challenge'],
                     "enable":target['enable'],
                     "team":target['team'],
