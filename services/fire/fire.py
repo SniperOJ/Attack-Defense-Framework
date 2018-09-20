@@ -47,29 +47,28 @@ def worker(wid):
         if enable:
             module = importlib.import_module("exploits.%s" % (filename))
             result = module.Exploit(job['author'], job['challenge']).run(target)
+            flag = result[1]
             if result[0]:
-                flag = result[1]
                 logging.info("[WORKER(%d)] %s => %s" % (wid, description, flag))
-                # Create Log
-                url = "http://%s:%s/api/%s/" % (
-                    config.get("sirius", "host"), 
-                    config.get("sirius", "port"), 
-                    "log",
-                )
-                data = {
-                    "exploit":job['exploit_url'],
-                    "flag":flag,
-                    "target":job['target_url'],
-                }
-                response = requests.post(url, headers={
-                    'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
-                }, data=data)
-                content = response.content
-                if response.status_code != 201:
-                    logging.warn(content)
             else:
-                flag = result[1]
                 logging.error("[WORKER(%d)] %s => %s" % (wid, description, flag))
+            # Create Log
+            url = "http://%s:%s/api/%s/" % (
+                config.get("sirius", "host"), 
+                config.get("sirius", "port"), 
+                "log",
+            )
+            data = {
+                "exploit":job['exploit_url'],
+                "flag":flag,
+                "target":job['target_url'],
+            }
+            response = requests.post(url, headers={
+                'Authorization': 'Bearer %s' % (config.get("sirius", "token")), 
+            }, data=data)
+            content = response.content
+            if response.status_code != 201:
+                logging.warn(content)
         else:
             logging.warn("[WORKER(%d)] %s disabled" % (wid, description))
 
