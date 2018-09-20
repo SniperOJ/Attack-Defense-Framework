@@ -48,6 +48,9 @@ Flag submit server
 │   └── targets
 └── targets # define the targets to attack
 ```
+#### TODO
+- [ ] websocket
+- [ ] judge whether flag is accepted before attack in one round
 
 #### Acknownledgement
 * [haozigege@lancet](https://github.com/zhl2008/flag_service)
