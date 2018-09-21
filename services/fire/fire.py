@@ -87,7 +87,7 @@ def worker(wid):
             continue
 
         module = importlib.import_module("exploits.%s" % (filename))
-        result = module.Exploit(job['author'], job['challenge']).run(target)
+        result = module.Exploit(job['author'], job['challenge'], False).run(target)
         flag = result[1]
         log_id, status_code = create_log(
                 job['exploit_url'],
