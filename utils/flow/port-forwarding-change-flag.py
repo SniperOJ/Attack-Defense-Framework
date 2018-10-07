@@ -11,6 +11,7 @@ import random
 import string
 import hashlib
 import time
+from base64 import b32encode
 
 data_recoder = {}
 
@@ -62,6 +63,14 @@ def handle(buffer):
         print "[+] Attack detected! (Base64 Padding 2)"
         print "[+] Replacing [%s] => [%s]" % (base64_encoded_flag2, base64_encoded_fake_flag2)
         buffer = buffer.replace(base64_encoded_flag2, base64_encoded_fake_flag2)
+        VALID = True
+    # Base32 encoded flag replacment
+    base32_encoded_flag0 = b32encode(flag).replace("\n", "").replace("=", "")
+    base32_encoded_fake_flag0 = b32encode(fake_flag).replace("\n", "").replace("=", "")
+    if base32_encoded_flag0 in buffer:
+        print "[+] Attack detected! (Base32 Padding 0)"
+        print "[+] Replacing [%s] => [%s]" % (base32_encoded_flag0, base32_encoded_fake_flag0)
+        buffer = buffer.replace(base32_encoded_flag0, base32_encoded_fake_flag0)
         VALID = True
     return (VALID, buffer)
 
