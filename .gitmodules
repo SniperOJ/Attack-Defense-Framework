@@ -10,3 +10,6 @@
 [submodule "services/wooyun"]
 	path = services/wooyun
 	url = https://github.com/jiji262/wooyun_articles
+[submodule "services/Platypus"]
+	path = services/Platypus
+	url = https://github.com/WangYihang/Platypus.git
