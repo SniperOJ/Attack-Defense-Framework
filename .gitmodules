@@ -13,3 +13,12 @@
 [submodule "services/Platypus"]
 	path = services/Platypus
 	url = https://github.com/WangYihang/Platypus.git
+[submodule "services/Sirius"]
+	path = services/Sirius
+	url = https://github.com/WangYihang/Sirius.git
+[submodule "services/Submittor"]
+	path = services/Submittor
+	url = https://github.com/WangYihang/Submittor.git
+[submodule "services/Railgun"]
+	path = services/Railgun
+	url = https://github.com/WangYihang/Railgun.git
