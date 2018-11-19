@@ -1,0 +1,9 @@
+[submodule "services/Sirius"]
+	path = services/Sirius
+	url = git@github.com:WangYihang/Sirius.git
+[submodule "services/Railgun"]
+	path = services/Railgun
+	url = git@github.com:WangYihang/Railgun.git
+[submodule "services/Submittor"]
+	path = services/Submittor
+	url = git@github.com:WangYihang/Submittor.git
