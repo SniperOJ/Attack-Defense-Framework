@@ -1,10 +1,19 @@
 [sirius]
 host = 127.0.0.1
-port = 8000
+port = 13370
 token = 
 [submittor]
 host = 127.0.0.1
-port = 4444
+port = 13371
 [platypus]
 host = 127.0.0.1
-port = 8080
+port = 13372
+[flag]
+# af872b65-cc7a-4e7c-944d-1c6d82439ab2
+# pattern = [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}
+# flag{6510dfd2-1a3d-4cb3-822e-acbeb2093321}
+# pattern = flag\{[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\}
+# flag{69d7dfd2c4c013153bb21bfcdba1c2e3}
+# pattern = flag\{[0-9a-fA-F]{32}\}
+# 674306f91a30987a167176d16035318f8e96f1f2c8860d518c9a42c6dc3ed5cfb71e0d2cbe5bfbb1440c0efb24963041190f72962f664b214b6aa916a20c28f47b1f43d83981fb879c9de1d1fc49c94e9141d6e3c56e88a31e14f4ce13ebfb20e40b19e074fd15bd13e6cee59876548e
+pattern = [0-9a-f]{224}
