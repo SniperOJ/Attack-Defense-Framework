@@ -1,9 +1,9 @@
 [submodule "services/Sirius"]
 	path = services/Sirius
-	url = https://github.com/WangYihang/Sirius.git
-[submodule "services/Submittor"]
-	path = services/Submittor
-	url = https://github.com/WangYihang/Submittor.git
+	url = git@github.com:WangYihang/Sirius.git
 [submodule "services/Railgun"]
 	path = services/Railgun
-	url = https://github.com/WangYihang/Railgun.git
+	url = git@github.com:WangYihang/Railgun.git
+[submodule "services/Submittor"]
+	path = services/Submittor
+	url = git@github.com:WangYihang/Submittor.git
