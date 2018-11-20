@@ -70,6 +70,7 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] Auto deploy waf
 - [ ] Auto send fake payloads
 - [ ] nginx config generator
+- [ ] Config Django via config file
 
 #### Acknownledgement
 * [haozigege@lancet](https://github.com/zhl2008/flag_service)
