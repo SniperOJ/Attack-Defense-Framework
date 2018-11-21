@@ -4,6 +4,12 @@ Attack and Defense Framework
 ```
 An Open Source CTF Attack and Defense Mode Framework
 ```
+#### Installation
+```
+git clone git@github.com:SniperOJ/Attack-Defense-Framework.git
+git checkout v2
+git submodule update --init
+```
 
 #### Examples
 > Fire Service  
@@ -55,6 +61,7 @@ An Open Source CTF Attack and Defense Mode Framework
 
 7 directories, 21 files
 ```
+
 #### TODO
 - [ ] websocket
 - [ ] judge whether flag is accepted before attack in one round
