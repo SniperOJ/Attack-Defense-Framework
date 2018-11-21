@@ -1,0 +1,11 @@
+server {
+	listen 80;
+	server_name platypus.lilac.com;
+
+	location / {
+		auth_basic "platypus";
+		auth_basic_user_file auth/basic;
+		autoindex on;
+		proxy_pass http://localhost:13372;
+	}
+}
