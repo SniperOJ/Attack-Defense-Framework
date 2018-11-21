@@ -1,3 +1,4 @@
 hosts
 auth/*
 sites-available/*
+!sites-available/template
