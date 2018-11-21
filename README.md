@@ -19,6 +19,8 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] Detect unusual flag submit
 - [ ] Auto deploy waf
 - [ ] Auto send fake payloads
+- [ ] OpenVPN
+- [ ] HTTPS
 - [x] nginx config generator
 - [x] Config Django via config file
 
