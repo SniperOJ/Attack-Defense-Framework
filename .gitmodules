@@ -7,6 +7,3 @@
 [submodule "services/Submittor"]
 	path = services/Submittor
 	url = git@github.com:WangYihang/Submittor.git
-[submodule "services/HackMD"]
-	path = services/HackMD
-	url = git@github.com:hackmdio/codimd-container.git
