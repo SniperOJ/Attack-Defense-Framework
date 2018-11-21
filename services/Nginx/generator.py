@@ -49,6 +49,8 @@ services = [
     "sirius",
     "submittor",
     "platypus",
+    "chat",
+    "hackmd",
 ]
 
 auth()

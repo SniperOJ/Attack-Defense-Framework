@@ -8,6 +8,12 @@ port = 13371
 [platypus]
 host = 127.0.0.1
 port = 13372
+[chat]
+host = 127.0.0.1
+port = 13373
+[hackmd]
+host = 127.0.0.1
+port = 13374
 [nginx]
 username = 
 password = 
