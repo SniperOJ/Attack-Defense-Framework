@@ -1,0 +1,11 @@
+server {
+	listen 80;
+	server_name submittor.lilac.com;
+
+	location / {
+		auth_basic "submittor";
+		auth_basic_user_file auth/basic;
+		autoindex on;
+		proxy_pass http://localhost:13371;
+	}
+}

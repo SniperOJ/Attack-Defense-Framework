@@ -1,0 +1,11 @@
+server {
+	listen 80;
+	server_name __NAME__.lilac.com;
+
+	location / {
+		auth_basic "__NAME__";
+		auth_basic_user_file auth/basic;
+		autoindex on;
+		proxy_pass http://localhost:__PORT__;
+	}
+}
