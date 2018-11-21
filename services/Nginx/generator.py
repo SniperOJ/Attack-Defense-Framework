@@ -18,7 +18,7 @@ def hosts(services):
     config.read('../config.ini')
     data = ""
     for service in services:
-        data += "%s\t%s" % (config.get(service.lower(), "host"), "%s.%s" % (service.lower(), suffix))
+        data += "%s %s\n" % (config.get(service.lower(), "host"), "%s.%s" % (service.lower(), suffix))
     with open("hosts", "w") as f:
         f.write(data)
 
@@ -35,6 +35,16 @@ def nginx(services):
             data = data.replace("__NAME__", service.lower())
             f.write(data)
 
+def setup(services):
+    # Basic auth
+    os.system("mkdir /etc/nginx/auth/")
+    os.system("cp ./auth/basic /etc/nginx/auth/basic")
+    for service in services:
+        os.system("cp ./sites-available/%s /etc/nginx/sites-available/" % service)
+        os.system("ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/%s" % (service, service))
+    os.system("service nginx restart")
+    os.system("cat hosts /etc/hosts | sort -nr | uniq > /tmp/hosts && mv /tmp/hosts /etc/hosts")
+
 services = [
     "sirius",
     "submittor",
@@ -44,3 +54,4 @@ services = [
 auth()
 hosts(services)
 nginx(services)
+setup(services)
