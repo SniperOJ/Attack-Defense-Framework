@@ -4,6 +4,24 @@ Attack and Defense Framework
 ```
 An Open Source CTF Attack and Defense Mode Framework
 ```
+
+#### TODO
+- [ ] websocket
+- [ ] judge whether flag is accepted before attack in one round
+- [ ] DNS server
+- [ ] Manage server at web UI (webtty)
+- [ ] Import targets from text file
+- [ ] Railgun add cmdline paramters (sepcific challenge)
+- [ ] Support for disable a specific exploit
+- [ ] Support for disable a specific target (team)
+- [ ] Update dispatch logic
+- [ ] Keep attack until flag got in every cycle
+- [ ] Detect unusual flag submit
+- [ ] Auto deploy waf
+- [ ] Auto send fake payloads
+- [x] nginx config generator
+- [x] Config Django via config file
+
 #### Installation
 ```
 git clone git@github.com:SniperOJ/Attack-Defense-Framework.git
@@ -61,23 +79,6 @@ git submodule update --init
 
 7 directories, 21 files
 ```
-
-#### TODO
-- [ ] websocket
-- [ ] judge whether flag is accepted before attack in one round
-- [ ] DHCP server
-- [ ] Manage server at web UI (webtty)
-- [ ] Import targets from text file
-- [ ] Railgun add cmdline paramters (sepcific challenge)
-- [ ] Support for disable a specific exploit
-- [ ] Support for disable a specific target (team)
-- [ ] Update dispatch logic
-- [ ] Keep attack until flag got in every cycle
-- [ ] Detect unusual flag submit
-- [ ] Auto deploy waf
-- [ ] Auto send fake payloads
-- [ ] nginx config generator
-- [ ] Config Django via config file
 
 #### Acknownledgement
 * [haozigege@lancet](https://github.com/zhl2008/flag_service)
