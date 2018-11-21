@@ -1,0 +1,113 @@
+# Using version 3 to provide play-with-docker badge
+# You can change to version 2 without breaking.
+#version: '2'
+version: '3'
+services:
+  database:
+    # Don't upgrade PostgreSQL by simply changing the version number
+    # You need to migrate the Database to the new PostgreSQL version
+    image: postgres:9.6-alpine
+    #mem_limit: 256mb         # version 2 only
+    #memswap_limit: 512mb     # version 2 only
+    #read_only: true          # not supported in swarm mode please enable along with tmpfs
+    #tmpfs:
+    #  - /run/postgresql:size=512K
+    #  - /tmp:size=256K
+    environment:
+      - POSTGRES_USER=hackmd
+      - POSTGRES_PASSWORD=hackmdpass
+      - POSTGRES_DB=hackmd
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      backend:
+    restart: always
+
+  # MySQL example
+  # Most of the documentation that applies to PostgreSQL applies also to MySQL
+  #database:
+  #    # You should be able to upgrade MySQL without problems
+  #    # but to make sure no even when a problem appears you
+  #    # should have a backup
+  #    image: mariadb:10
+  #    environment:
+  #      - MYSQL_USER=hackmd
+  #      - MYSQL_PASSWORD=hackmdpass
+  #      - MYSQL_DATABASE=hackmd
+  #      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+  #    volumes:
+  #      - database:/var/lib/mysql
+  #      # This config provides UTF-8 support to the database by default
+  #      # If this config is not used, HackMD breaks as it tries to write
+  #      # UTF-8 to a latin database.
+  #      - ./resources/utf8.cnf:/etc/mysql/conf.d/utf8.cnf
+  #    networks:
+  #      backend:
+  #    restart: always
+
+  app:
+    # Uncomment the following section to build the image yourself:
+    #build:
+    #  context: .
+    #  dockerfile: debian/Dockerfile
+    #  args:
+    #    - "VERSION=master"
+    #    - "CODIMD_REPOSITORY=https://github.com/hackmdio/codimd.git"
+    image: hackmdio/hackmd:1.2.1
+    #mem_limit: 256mb         # version 2 only
+    #memswap_limit: 512mb     # version 2 only
+    #read_only: true          # not supported in swarm mode, enable along with tmpfs
+    #tmpfs:
+    #  - /tmp:size=512K
+    #  - /hackmd/tmp:size=1M
+    #  # Make sure you remove this when you use filesystem as upload type
+    #  - /hackmd/public/uploads:size=10M
+    environment:
+      # DB_URL is formatted like: <databasetype>://<username>:<password>@<hostname>/<database>
+      # Other examples are:
+      # - mysql://hackmd:hackmdpass@database:3306/hackmd
+      # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
+      # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
+      # Base
+      # - CMD_URL_ADDPORT=80
+      - HMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
+      # Image Upload
+      - CMD_IMAGE_UPLOAD_TYPE=minio
+      # Minio
+      - CMD_MINIO_ACCESS_KEY=__ACCESS_KEY__
+      - CMD_MINIO_SECRET_KEY=__SECRET_KEY__
+      - CMD_MINIO_ENDPOINT=__MINIO_ENDPOINT__
+      - CMD_MINIO_PORT=80
+      - CMD_MINIO_SECURE=false
+      - CMD_S3_BUCKET=hackmd
+      # # Host
+      # - CMD_DOMAIN=__HOSTNAME__
+      # - CMD_HOST=__HOSTNAME__
+      # - CMD_PROTOCOL_USESSL=true
+      # - CMD_ALLOW_ANONYMOUS=false
+      # - CMD_ALLOW_ANONYMOUS_EDITS=false
+
+    ports:
+      # Ports that are published to the outside.
+      # The latter port is the port inside the container. It should always stay on 3000
+      # If you only specify a port it'll published on all interfaces. If you want to use a
+      # local reverse proxy, you may want to listen on 127.0.0.1.
+      # Example:
+      # - "127.0.0.1:3000:3000"
+      # - "3000:3000"
+      - "__HOST__:__PORT__:3000"
+    networks:
+      backend:
+    restart: always
+    depends_on:
+      - database
+
+# Define networks to allow best isolation
+networks:
+  # Internal network for communication with PostgreSQL/MySQL
+  backend:
+
+# Define named volumes so data stays in place
+volumes:
+  # Volume for PostgreSQL/MySQL database
+  database:
