@@ -9,13 +9,14 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] websocket
 - [ ] Manage server at web UI (webtty)
 - [ ] Railgun add cmdline paramters (sepcific challenge)
-- [ ] Update dispatch logic
-- [ ] Detect unusual flag submit
+- [ ] Detect unusual flag submit (eg: every cycle the flag of a specific team is wrong)
 - [ ] Auto deploy waf
 - [ ] Auto send fake payloads
 - [ ] OpenVPN
 - [ ] HTTPS
-- [ ] Keep attack until flag got in every cycle
+- [x] Search flag what if there are serval flag occurs in the response
+- [x] Add priority too exploit
+- [x] Keep attack until flag got in every cycle
 - [x] Import targets from text file
 - [x] Support for disable a specific exploit
 - [x] Support for disable a specific target (team)
