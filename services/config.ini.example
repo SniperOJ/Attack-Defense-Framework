@@ -8,6 +8,9 @@ port = 13371
 [platypus]
 host = 127.0.0.1
 port = 13372
+[nginx]
+username = 
+password = 
 [flag]
 # af872b65-cc7a-4e7c-944d-1c6d82439ab2
 # pattern = [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}
