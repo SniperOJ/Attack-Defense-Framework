@@ -2,6 +2,7 @@
 
 import configparser
 import os
+import sys
 
 suffix = "lilac.com"
 
@@ -25,8 +26,13 @@ def hosts(services):
 def nginx(services):
     config = configparser.ConfigParser()
     config.read('../config.ini')
-    template = open("sites-available/template").read()
     for service in services:
+        print("./sites-available/%s.example" % (service))
+        if os.path.isfile("./sites-available/%s.example" % (service)):
+            print "example file for %s found" % (service)
+            template = open("sites-available/%s.example" % (service)).read()
+        else:
+            template = open("sites-available/default.example").read()
         with open("sites-available/%s" % (service.lower()), "w") as f:
             data = template
             data = data.replace("__HOSTNAME__", "%s.%s" % (service.lower(), suffix))
@@ -51,9 +57,24 @@ services = [
     "platypus",
     "chat",
     "hackmd",
+    "minio",
 ]
 
-auth()
-hosts(services)
-nginx(services)
-setup(services)
+if len(sys.argv) <= 1:
+    auth()
+    hosts(services)
+    nginx(services)
+    setup(services)
+else:
+    command = sys.argv[1].lower()
+    if command == "auth":
+        auth()
+    elif command == "hosts":
+        hosts(services)
+    elif command == "nginx":
+        nginx(services)
+    elif command == "setup":
+        setup(services)
+    else:
+        print "No such command"
+

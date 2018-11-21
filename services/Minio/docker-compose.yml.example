@@ -1,0 +1,16 @@
+version: '2'
+
+# starts 4 docker containers running minio server instances. Each
+# minio server's web interface will be accessible on the host at port
+# 9001 through 9004.
+services:
+ minio:
+  image: minio/minio
+  volumes:
+   - ./data:/data
+  ports:
+   - "__PORT__:9000"
+  environment:
+   MINIO_ACCESS_KEY: __ACCESS_KEY__
+   MINIO_SECRET_KEY: __SECRET_KEY__
+  command: server /data
