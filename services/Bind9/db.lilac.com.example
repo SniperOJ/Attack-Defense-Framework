@@ -1,0 +1,18 @@
+;
+; BIND data file for local loopback interface
+;
+$TTL	604800
+@	IN	SOA	lilac.com. root.localhost. (
+			      2		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+@   IN  NS  localhost.
+chat	IN	A	__HOST__
+hackmd	IN	A	__HOST__
+minio	IN	A	__HOST__
+platypus	IN	A	__HOST__
+sirius	IN	A	__HOST__
+submittor	IN	A	__HOST__
