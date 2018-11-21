@@ -7,8 +7,6 @@ An Open Source CTF Attack and Defense Mode Framework
 
 #### TODO
 - [ ] websocket
-- [ ] judge whether flag is accepted before attack in one round
-- [ ] DNS server
 - [ ] Manage server at web UI (webtty)
 - [ ] Import targets from text file
 - [ ] Railgun add cmdline paramters (sepcific challenge)
@@ -21,6 +19,7 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] Auto send fake payloads
 - [ ] OpenVPN
 - [ ] HTTPS
+- [x] DNS server
 - [x] nginx config generator
 - [x] Config Django via config file
 
