@@ -8,7 +8,7 @@ An Open Source CTF Attack and Defense Mode Framework
 #### TODO
 - [ ] websocket
 - [ ] Manage server at web UI (webtty)
-- [ ] Detect unusual flag submit (eg: every cycle the flag of a specific team is wrong)
+- [ ] Detect unusual flag submit (eg: every cycle flag is got from a specific team but wrong)
 - [ ] OpenVPN
 - [ ] HTTPS
 - [ ] Webshell management
