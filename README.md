@@ -11,9 +11,9 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] Detect unusual flag submit (eg: every cycle flag is got from a specific team but wrong)
 - [ ] OpenVPN
 - [ ] HTTPS
-- [ ] Webshell management
 - [ ] Auto deploy waf
 - [ ] Auto send fake payloads
+- [x] Webshell management
 - [x] Railgun add cmdline paramters (sepcific challenge)
 - [x] Search flag what if there are serval flag occurs in the response
 - [x] Add priority too exploit
