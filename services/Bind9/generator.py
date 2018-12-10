@@ -12,4 +12,5 @@ with open("db.lilac.com", "w") as f:
 
 os.system("cp db.lilac.com /etc/bind/")
 os.system("cp named.conf.default-zones /etc/bind/")
+os.system("cp named.conf.options /etc/bind/")
 os.system("service bind9 restart")
