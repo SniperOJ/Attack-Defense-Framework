@@ -17,6 +17,9 @@ An Open Source CTF Attack and Defense Mode Framework
 - [ ] Upgrade Railgun attack dispatching logic
 - [ ] RSA webshell
 - [ ] Mutliple flag regexp pattern
+- [ ] Mutliple threads change ssh password
+- [ ] SSH sessions management
+- [ ] PWN shell session management (If no alarm)
 - [x] OpenVPN
 - [x] Webshell management
 - [x] Railgun add cmdline paramters (sepcific challenge)
