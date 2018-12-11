@@ -49,7 +49,7 @@ def setup(services):
         os.system("cp ./sites-available/%s /etc/nginx/sites-available/" % service)
         os.system("ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/%s" % (service, service))
     os.system("service nginx restart")
-    os.system("cat hosts /etc/hosts | sort -nr | uniq > /tmp/hosts && mv /tmp/hosts /etc/hosts")
+    # os.system("cat hosts /etc/hosts | sort -nr | uniq > /tmp/hosts && mv /tmp/hosts /etc/hosts")
 
 services = [
     "sirius",
