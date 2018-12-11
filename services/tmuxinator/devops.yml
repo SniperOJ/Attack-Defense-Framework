@@ -1,0 +1,17 @@
+# /home/lilac/.config/tmuxinator/devops.yml
+
+name: devops
+root: ~/
+
+startup_window: Monitor
+startup_pane: 1
+attach: true
+
+windows:
+  - Monitor: 
+      layout: main-vertical
+      panes:
+        - htop
+        - nload tun0
+  - VPS: ssh vpn
+  - OpenVPN: sudo openvpn ~/.openvpn/nuc.ovpn

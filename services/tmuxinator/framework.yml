@@ -1,0 +1,27 @@
+# /home/lilac/.config/tmuxinator/framework.yml
+
+name: framework
+root: ~/Desktop/Framework/services
+
+windows:
+    - Wiki: 
+        panes:
+            - cd ctf-wiki && mkdocs serve
+    - IDArling: 
+        panes:
+            - cd IDArling && python3 idarling_server.py -h 127.0.0.1 -p 13376 -l DEBUG --no-ssl
+    - Sirius: 
+        panes:
+            - cd Sirius && python3 manage.py runserver
+    - HackMD: 
+        panes: 
+            - cd HackMD && sudo docker-compose up
+    - Minio: 
+        panes:
+            - cd Minio && sudo docker-compose up
+    - RailGun:
+        panes:
+            - cd Railgun
+    - Sumittor: 
+        panes:
+            - cd Submittor && python submittor.py template

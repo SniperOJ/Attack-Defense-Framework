@@ -10,3 +10,6 @@
 [submodule "services/Webshell"]
 	path = services/Webshell
 	url = git@github.com:WangYihang/Webshell-Sniper.git
+[submodule "services/IDArling"]
+	path = services/IDArling
+	url = https://github.com/IDArlingTeam/IDArling.git
