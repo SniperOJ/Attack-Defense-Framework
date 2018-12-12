@@ -6,10 +6,10 @@ root: ~/Desktop/Framework/services
 windows:
     - Wiki: 
         panes:
-            - cd ctf-wiki && mkdocs serve
+            - cd ctf-wiki && mkdocs serve -a 127.0.0.1:13376 -v -t material
     - IDArling: 
         panes:
-            - cd IDArling && python3 idarling_server.py -h 127.0.0.1 -p 13376 -l DEBUG --no-ssl
+            - cd IDArling && python3 idarling_server.py -h 127.0.0.1 -p 13377 -l DEBUG --no-ssl
     - Sirius: 
         panes:
             - cd Sirius && python3 manage.py runserver

@@ -1,0 +1,11 @@
+server {
+	listen 80;
+	server_name wiki.lilac.com;
+
+	location / {
+		auth_basic "wiki";
+		auth_basic_user_file auth/basic;
+		autoindex on;
+		proxy_pass http://127.0.0.1:13376;
+	}
+}
