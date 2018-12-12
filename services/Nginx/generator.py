@@ -44,12 +44,15 @@ def nginx(services):
 def setup(services):
     # Basic auth
     os.system("mkdir /etc/nginx/auth/")
+    os.system("cp ./nginx.conf /etc/nginx/nginx.conf")
     os.system("cp ./auth/basic /etc/nginx/auth/basic")
     for service in services:
         os.system("cp ./sites-available/%s /etc/nginx/sites-available/" % service)
         os.system("ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/%s" % (service, service))
     os.system("service nginx restart")
     os.system("cat hosts /etc/hosts | sort -nr | uniq > /tmp/hosts && mv /tmp/hosts /etc/hosts")
+    # TODO: IDarling port should obtained from config.ini
+    os.system("cp -r ./tcpconf.d /etc/nginx/")
 
 services = [
     "sirius",
@@ -59,6 +62,7 @@ services = [
     "hackmd",
     "minio",
     "wiki",
+    "nextcloud",
 ]
 
 if len(sys.argv) <= 1:

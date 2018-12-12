@@ -1,0 +1,10 @@
+stream {
+    upstream idarling {
+        server 127.0.0.1:13377;
+    }
+
+    server {
+        listen 10000;
+        proxy_pass idarling;
+    }
+}

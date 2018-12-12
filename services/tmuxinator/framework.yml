@@ -25,3 +25,6 @@ windows:
     - Sumittor: 
         panes:
             - cd Submittor && python submittor.py template
+    - Nextcloud: 
+        panes:
+            - cd Nextcloud && sudo docker-compose up

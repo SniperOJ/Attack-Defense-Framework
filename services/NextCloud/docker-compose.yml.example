@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+ nextcloud:
+  image: nextcloud
+  volumes:
+   - ./data:/data
+   - ./html:/var/www/html
+  ports:
+   - "__HOST__:__PORT__:80"
